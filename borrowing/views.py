@@ -26,7 +26,7 @@ class BorrowingViewSet(
             return BorrowingListSerializer
         if self.action == "create":
             return BorrowingCreateSerializer
-        if self.action == "borrowing_return":
+        if self.action == "returning":
             return BorrowingReturnSerializer
         return BorrowingSerializer
 
@@ -57,9 +57,9 @@ class BorrowingViewSet(
     @action(
         methods=["POST"],
         detail=True,
-        url_path="return",
+        url_path="returning",
     )
-    def borrowing_return(self, request, pk=None):
+    def returning(self, request, pk=None):
         borrowing = self.get_object()
 
         if borrowing.user != self.request.user:
