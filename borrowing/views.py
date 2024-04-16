@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -85,3 +86,23 @@ class BorrowingViewSet(
         }
 
         return Response(message, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                description="Filter by user id (available only for admins)",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                "is_active",
+                type=OpenApiTypes.BOOL,
+                description="Filter by is_active (True/False)",
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """List user's borrowings with filter by user_id(for admin) or is_active"""
+        return super().list(request, *args, **kwargs)
