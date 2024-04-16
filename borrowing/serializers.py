@@ -36,3 +36,9 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         if book.inventory == 0:
             raise serializers.ValidationError("There is no available book to borrow")
         return book
+
+
+class BorrowingReturnSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = ("id",)
