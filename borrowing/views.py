@@ -27,7 +27,7 @@ class BorrowingViewSet(
             return BorrowingListSerializer
         if self.action == "create":
             return BorrowingCreateSerializer
-        if self.action == "returning":
+        if self.action == "borrowing_return":
             return BorrowingReturnSerializer
         return BorrowingSerializer
 
@@ -58,34 +58,27 @@ class BorrowingViewSet(
     @action(
         methods=["POST"],
         detail=True,
-        url_path="returning",
+        url_path="return",
     )
-    def returning(self, request, pk=None):
+    def borrowing_return(self, request, pk=None):
         borrowing = self.get_object()
+        serializer = self.get_serializer(
+            borrowing,
+            data={
+                "user": borrowing.user.id,
+                "is_active": borrowing.is_active
+            },
+            context={"request": self.request}
+        )
 
-        if borrowing.user != self.request.user:
-            return Response(
-                {"error": "You can not return someone else's borrowing"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if serializer.is_valid():
+            book = borrowing.book
+            book.inventory += 1
+            book.save()
+            serializer.save(is_active=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if not borrowing.is_active:
-            return Response(
-                {"error": "You can not return inactive borrowing"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        book = borrowing.book
-        book.inventory += 1
-        book.save()
-
-        borrowing.is_active = False
-        borrowing.save()
-        message = {
-            "message": f"You successfully returned {book.title} book!"
-        }
-
-        return Response(message, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         parameters=[

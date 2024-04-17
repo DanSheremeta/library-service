@@ -41,4 +41,19 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
 class BorrowingReturnSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
-        fields = ("id",)
+        fields = (
+            "id",
+            "user",
+            "is_active",
+        )
+
+    def validate_user(self, user):
+        if user != self.context["request"].user:
+            raise serializers.ValidationError("You can not return someone else's borrowing")
+        return user
+
+    def validate_is_active(self, is_active):
+        print("validate is_active called")
+        if not is_active:
+            raise serializers.ValidationError("You can not return inactive borrowing")
+        return is_active
