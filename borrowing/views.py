@@ -71,14 +71,12 @@ class BorrowingViewSet(
             context={"request": self.request}
         )
 
-        if serializer.is_valid():
-            book = borrowing.book
-            book.inventory += 1
-            book.save()
-            serializer.save(is_active=False)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        book = borrowing.book
+        book.inventory += 1
+        book.save()
+        serializer.save(is_active=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         parameters=[
